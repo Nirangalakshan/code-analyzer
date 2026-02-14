@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Octokit } from "octokit";
 import { VertexAI } from "@google-cloud/vertexai";
+import { uploadToGCS } from "@/lib/gcs";
 
 // Initialize Octokit with your PAT
 const octokit = new Octokit({
@@ -216,7 +217,12 @@ export async function POST(req: NextRequest) {
       The JSON must include:
       1. "summary": A concise overview of the project's purpose and technology stack.
       2. "documentation": A detailed technical documentation/README including architecture, key modules, and setup.
-      3. "mermaid": A valid Mermaid.js diagram (class diagram or architecture diagram) representing the system flow.
+      3. "mermaid": A VALID Mermaid.js diagram (strictly flowchart TD or architecture diagram). 
+         CRITICAL RULES for Mermaid:
+         - DO NOT wrap the mermaid code in markdown code blocks (e.g., no \`\`\`mermaid).
+         - ALWAYS wrap node labels in double quotes (e.g., A["Label Text"]).
+         - Use only valid Mermaid syntax.
+         - Avoid special characters like (), [], {}, <>, :, ; unless they are inside quotes.
       4. "analysis": An array of objects each with "type" (security, performance, quality), "severity" (low, medium, high), and "description".
     `;
 
@@ -238,7 +244,50 @@ export async function POST(req: NextRequest) {
 
     const analysisResult = JSON.parse(textResponse);
 
-    return NextResponse.json(analysisResult);
+    // Post-process Mermaid to strip any accidentally included markdown code blocks
+    if (analysisResult.mermaid) {
+      analysisResult.mermaid = analysisResult.mermaid
+        .replace(/```mermaid\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
+    }
+
+    // 4. Save to Google Cloud Storage (Background Save)
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const baseDir = `analysis/${owner}_${repo}/${timestamp}`;
+
+    try {
+      await Promise.all([
+        uploadToGCS(
+          `${baseDir}/documentation.md`,
+          analysisResult.documentation,
+        ),
+        uploadToGCS(`${baseDir}/architecture.mmd`, analysisResult.mermaid),
+        uploadToGCS(
+          `${baseDir}/analysis.json`,
+          JSON.stringify(
+            {
+              summary: analysisResult.summary,
+              analysis: analysisResult.analysis,
+              repoUrl,
+              timestamp: new Date().toISOString(),
+            },
+            null,
+            2,
+          ),
+        ),
+      ]);
+      console.log(`[CodeLens] All artifacts saved to GCS at: ${baseDir}`);
+    } catch (saveError) {
+      console.error("[CodeLens] Error auto-saving to GCS:", saveError);
+      // We don't fail the request if saving fails, but we log it
+    }
+
+    return NextResponse.json({
+      ...analysisResult,
+      storagePath: baseDir,
+      timestamp,
+    });
   } catch (error: unknown) {
     console.error("Analysis Error:", error);
     const message =

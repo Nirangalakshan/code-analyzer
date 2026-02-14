@@ -1,12 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
+  --background: #000212;
   --foreground: #fafafa;
   --primary: #3b82f6;
   --primary-deep: #2563eb;
   --secondary: #8b5cf6;
   --accent: #10b981;
+  --card-bg: rgba(10, 10, 12, 0.7);
+  --border: rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -21,28 +23,37 @@ body {
   background: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 @keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shine {
+  from { transform: translateX(-100%) rotate(45deg); }
+  to { transform: translateX(200%) rotate(45deg); }
 }
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
 
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
 }
 
 .glass-hover:hover {
@@ -57,8 +68,41 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.text-gradient-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .glow {
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.glow-secondary {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  pointer-events: none;
 }
 
 ::-webkit-scrollbar {
@@ -76,4 +120,8 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #333;
+}
+
+.mask-radial {
+  mask-image: radial-gradient(circle at center, black 0%, transparent 100%);
 }
