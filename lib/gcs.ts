@@ -12,8 +12,27 @@ const storage = new Storage({
     : {}),
 });
 
-const bucketName = process.env.GCP_BUCKET_NAME || "";
-const bucket = storage.bucket(bucketName);
+const bucketName = process.env.GCP_BUCKET_NAME;
+
+if (!bucketName) {
+  console.warn(
+    "Warning: GCP_BUCKET_NAME is not defined. Google Cloud Storage features will fail if used.",
+  );
+}
+
+const bucket = bucketName ? storage.bucket(bucketName) : (null as any);
+
+/**
+ * Ensures the bucket is configured before proceeding
+ */
+function ensureBucket() {
+  if (!bucketName || !bucket) {
+    throw new Error(
+      "GCP_BUCKET_NAME is missing. Please set it in your environment variables.",
+    );
+  }
+  return bucket;
+}
 
 /**
  * Uploads content to Google Cloud Storage
@@ -22,6 +41,7 @@ const bucket = storage.bucket(bucketName);
  */
 export async function uploadToGCS(filename: string, content: string | Buffer) {
   try {
+    const bucket = ensureBucket();
     const file = bucket.file(filename);
 
     // Set appropriate content type based on extension
@@ -48,6 +68,7 @@ export async function uploadToGCS(filename: string, content: string | Buffer) {
  */
 export async function listAnalyses() {
   try {
+    const bucket = ensureBucket();
     const [files] = await bucket.getFiles({ prefix: "analysis/" });
 
     // Each analysis has a metadata.json or analysis.json
@@ -87,6 +108,7 @@ export async function listAnalyses() {
  */
 export async function getFileContent(filename: string) {
   try {
+    const bucket = ensureBucket();
     const [content] = await bucket.file(filename).download();
     return content.toString();
   } catch (error) {
@@ -100,6 +122,7 @@ export async function getFileContent(filename: string) {
  */
 export async function deleteAnalysis(path: string) {
   try {
+    const bucket = ensureBucket();
     // deleteFiles with a prefix removes everything under that "folder"
     await bucket.deleteFiles({ prefix: path });
     console.log(`[GCS] Successfully deleted analysis: ${path}`);
