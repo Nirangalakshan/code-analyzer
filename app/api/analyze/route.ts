@@ -38,21 +38,31 @@ const getAuthOptions = () => {
   return {};
 };
 
-// Initialize Vertex AI
-// const project = process.env.GCP_PROJECT_ID || "";
-const location = process.env.GCP_LOCATION || "us-central1";
-const vertexAI = new VertexAI({
-  project: process.env.GCP_PROJECT_ID,
-  location,
-  googleAuthOptions: getAuthOptions(),
-});
+// Initialize Vertex AI (using a getter to ensure env vars are loaded)
+const getVertexAI = () => {
+  const project =
+    process.env.GCP_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || "";
+  const location = process.env.GCP_LOCATION || "us-central1";
 
-const model = vertexAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
-  generationConfig: {
-    responseMimeType: "application/json",
-  },
-});
+  if (!project && process.env.NODE_ENV === "production") {
+    console.warn(
+      "GCP_PROJECT_ID is missing. Vertex AI initialization might fail.",
+    );
+  }
+
+  const vertexAI = new VertexAI({
+    project: project,
+    location,
+    googleAuthOptions: getAuthOptions(),
+  });
+
+  return vertexAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    generationConfig: {
+      responseMimeType: "application/json",
+    },
+  });
+};
 
 // Helper to filter relevant files
 const isRelevantFile = (filename: string) => {
@@ -152,8 +162,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check for either separate parameters OR the full JSON string
+    // Check for authentication
+    // On Cloud Run (in production), the environment itself provides auth
+    const isCloudRun = !!process.env.K_SERVICE;
     const hasGCPAuth =
+      isCloudRun ||
       (process.env.GCP_CLIENT_EMAIL && process.env.GCP_PRIVATE_KEY) ||
       process.env.GCP_SERVICE_ACCOUNT_KEY ||
       process.env.GOOGLE_APPLICATION_CREDENTIALS;
@@ -162,7 +175,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "GCP Authentication missing. Please set GCP_CLIENT_EMAIL and GCP_PRIVATE_KEY in .env.local.",
+            "GCP Authentication missing. Please set GCP_CLIENT_EMAIL and GCP_PRIVATE_KEY.",
         },
         { status: 500 },
       );
@@ -234,6 +247,7 @@ export async function POST(req: NextRequest) {
     `;
 
     // 3. Generate Analysis using Vertex AI
+    const model = getVertexAI();
     const result = await model.generateContent(prompt);
     const textResponse =
       result.response.candidates?.[0]?.content?.parts?.[0]?.text;
