@@ -42,7 +42,7 @@ const getAuthOptions = () => {
 const project = process.env.GCP_PROJECT_ID || "";
 const location = process.env.GCP_LOCATION || "us-central1";
 const vertexAI = new VertexAI({
-  project,
+  project: project,
   location,
   googleAuthOptions: getAuthOptions(),
 });
