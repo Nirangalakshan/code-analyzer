@@ -1,4 +1,4 @@
-import { Storage } from "@google-cloud/storage";
+import { Storage, Bucket, File } from "@google-cloud/storage";
 
 const storage = new Storage({
   projectId: process.env.GCP_PROJECT_ID,
@@ -20,7 +20,7 @@ if (!bucketName) {
   );
 }
 
-const bucket = bucketName ? storage.bucket(bucketName) : (null as any);
+const bucket: Bucket | null = bucketName ? storage.bucket(bucketName) : null;
 
 /**
  * Ensures the bucket is configured before proceeding
@@ -73,10 +73,12 @@ export async function listAnalyses() {
 
     // Each analysis has a metadata.json or analysis.json
     // We'll filter for analysis.json to identify complete sessions
-    const snapshotFiles = files.filter((f) => f.name.endsWith("analysis.json"));
+    const snapshotFiles = files.filter((f: File) =>
+      f.name.endsWith("analysis.json"),
+    );
 
     const results = await Promise.all(
-      snapshotFiles.map(async (file) => {
+      snapshotFiles.map(async (file: File) => {
         const [content] = await file.download();
         const metadata = JSON.parse(content.toString());
 
