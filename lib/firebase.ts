@@ -3,12 +3,12 @@ import { getAuth, GithubAuthProvider, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyAtN40CW21dlfJ2LR3sYuut9c4I1Ri5IHw",
+  authDomain: "code-analyzer-49332.firebaseapp.com",
+  projectId: "code-analyzer-49332",
+  storageBucket: "code-analyzer-49332.firebasestorage.app",
+  messagingSenderId: "27677318489",
+  appId: "1:27677318489:web:75a9ae9d3ad72387d44048",
 };
 
 // Initialize Firebase safely
