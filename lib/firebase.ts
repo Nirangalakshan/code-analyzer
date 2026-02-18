@@ -22,8 +22,14 @@ const auth = (
     ? getAuth(app)
     : ({
         currentUser: null,
-        onAuthStateChanged: () => () => {},
-        onIdTokenChanged: () => () => {},
+        onAuthStateChanged: (nextOrObserver: any) => {
+          if (typeof nextOrObserver === "function") nextOrObserver(null);
+          return () => {};
+        },
+        onIdTokenChanged: (nextOrObserver: any) => {
+          if (typeof nextOrObserver === "function") nextOrObserver(null);
+          return () => {};
+        },
       } as unknown)
 ) as Auth;
 const db = (app ? getFirestore(app) : ({} as unknown)) as Firestore;
