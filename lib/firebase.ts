@@ -17,7 +17,15 @@ const app: FirebaseApp | null =
     (getApps().length > 0 ? getApp() : initializeApp(firebaseConfig))) ||
   null;
 
-const auth = (app ? getAuth(app) : ({ currentUser: null } as unknown)) as Auth;
+const auth = (
+  app
+    ? getAuth(app)
+    : ({
+        currentUser: null,
+        onAuthStateChanged: () => () => {},
+        onIdTokenChanged: () => () => {},
+      } as unknown)
+) as Auth;
 const db = (app ? getFirestore(app) : ({} as unknown)) as Firestore;
 const githubProvider = new GithubAuthProvider();
 

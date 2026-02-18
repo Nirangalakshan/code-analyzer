@@ -4,11 +4,17 @@ This guide explains how to deploy your Next.js application to Google Cloud Run u
 
 ## Prerequisites
 
-1.  **Docker Desktop**: Ensure Docker is installed and running.
+1.  **Automated Deploy (Windows)**: You can use the provided `deploy.ps1` script to handle build arguments automatically from your `.env.local` file.
+
+    ```powershell
+    ./deploy.ps1
+    ```
+
+2.  **Docker Desktop**: Ensure Docker is installed and running.
     ```bash
     docker --version
     ```
-2.  **Google Cloud SDK**: Install the `gcloud` CLI if not already installed.
+3.  **Google Cloud SDK**: Install the `gcloud` CLI if not already installed.
     - [Download Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
     - Initialize it:
       ```bash
