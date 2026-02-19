@@ -85,8 +85,9 @@ Deploy the container to Cloud Run. You need to set the environment variables req
 
 **Important Environment Variables**:
 
+- `GITHUB_TOKEN`: Your GitHub Personal Access Token (for fetching repository code).
 - `NEXTAUTH_SECRET`: Generate a random string (e.g. `openssl rand -base64 32`).
-- `NEXTAUTH_URL`: Your deployed Cloud Run URL (you will get this after deployment). construct it initially as `http://localhost:3000` or similar for first run.
+- `NEXTAUTH_URL`: Your deployed Cloud Run URL (you will get this after deployment).
 - `GCP_PROJECT_ID`: Your GCP Project ID.
 - `GCP_BUCKET_NAME`: Name of your GCS bucket.
 
@@ -97,7 +98,7 @@ gcloud run deploy code-analyzer-service \
     --image us-central1-docker.pkg.dev/PROJECT_ID/my-repo/code-analyzer:latest \
     --region us-central1 \
     --allow-unauthenticated \
-    --set-env-vars "NEXTAUTH_SECRET=your_secret_here,GCP_PROJECT_ID=your_project_id,GCP_BUCKET_NAME=your_bucket_name"
+    --set-env-vars "GITHUB_TOKEN=your_token_here,NEXTAUTH_SECRET=your_secret_here,GCP_PROJECT_ID=your_project_id,GCP_BUCKET_NAME=your_bucket_name"
 ```
 
 _(Replace `PROJECT_ID`, `your_secret_here`, `your_project_id` and `your_bucket_name` with actual values)_.
